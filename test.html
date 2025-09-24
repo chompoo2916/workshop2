@@ -7,17 +7,31 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            font-family: 'Kanit', sans-serif;
+            background-color: #fce7f3;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fbcfe8' fill-opacity='0.4'%3E%3Cpath d='M.2 10a8 8 0 1 0 15.6 1.1L16 10a8 8 0 1 1-15.8 1L.2 10z'/%3E%3C/g%3E%3C/svg%3E");
         }
         .card {
-            background-color: white;
+            background-color: #ffffff;
             padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(255, 105, 180, 0.2), 0 4px 6px -2px rgba(255, 105, 180, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+        }
+        .text-cute-pink {
+            color: #ff69b4;
+        }
+        .text-cute-purple {
+            color: #a2d2ff;
+        }
+        .text-cute-green {
+            color: #90ee90;
         }
         .table-container {
             overflow-x: auto;
@@ -30,34 +44,47 @@
             text-align: left;
             padding: 0.75rem;
             white-space: nowrap;
+            color: #333;
+            border-bottom: 1px solid #fbcfe8;
         }
         .table-container th {
-            background-color: #f9fafb;
+            background-color: #fef2f2;
             font-weight: 600;
-            border-bottom: 2px solid #e5e7eb;
+            color: #ff69b4;
         }
         .table-container tr:nth-child(even) {
-            background-color: #f9fafb;
+            background-color: #f9f0f3;
         }
         .table-container tr:hover {
-            background-color: #f3f4f6;
+            background-color: #ffe4e6;
         }
         /* Custom scrollbar for better appearance */
         .table-container::-webkit-scrollbar {
             height: 8px;
         }
         .table-container::-webkit-scrollbar-thumb {
-            background-color: #d1d5db;
+            background-color: #ffb6c1;
             border-radius: 10px;
         }
         .table-container::-webkit-scrollbar-track {
-            background-color: #e5e7eb;
+            background-color: #fbcfe8;
+        }
+        input[type="text"] {
+            background-color: #fff;
+            color: #333;
+            border: 2px solid #ff69b4;
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.2);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
         }
     </style>
 </head>
 <body class="p-6">
     <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Interactive Dashboard</h1>
+        <h1 class="text-3xl font-bold text-cute-pink mb-6 text-center">💖 Interactive Dashboard น่ารักๆ 💖</h1>
         
         <div class="flex items-center justify-between mb-6">
             <!-- ปุ่ม Upload ถูกลบออกเพื่อให้ดึงข้อมูลจาก URL โดยอัตโนมัติ -->
@@ -67,25 +94,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
             <div class="card flex flex-col items-center">
                 <p class="text-lg font-medium text-gray-500">จำนวนผู้ใช้งาน</p>
-                <p id="user-count" class="text-4xl font-bold text-blue-600 mt-2">0</p>
+                <p id="user-count" class="text-4xl font-bold text-cute-pink mt-2">0</p>
             </div>
             <div class="card flex flex-col items-center">
                 <p class="text-lg font-medium text-gray-500">คะแนนความพึงพอใจเฉลี่ย</p>
-                <p id="satisfaction-score" class="text-4xl font-bold text-green-600 mt-2">0</p>
+                <p id="satisfaction-score" class="text-4xl font-bold text-cute-green mt-2">0</p>
             </div>
         </div>
 
         <!-- Bar Chart for Platforms -->
         <div class="card mb-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">จำนวนผู้ใช้งานตามแพลตฟอร์ม</h2>
+            <h2 class="text-xl font-semibold text-cute-pink mb-4">จำนวนผู้ใช้งานตามแพลตฟอร์ม</h2>
             <canvas id="platform-chart"></canvas>
         </div>
 
         <!-- Data Table -->
         <div class="card mb-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">ตารางข้อมูลทั้งหมด</h2>
+            <h2 class="text-xl font-semibold text-cute-pink mb-4">ตารางข้อมูลทั้งหมด</h2>
             <div class="mb-4">
-                <input type="text" id="table-filter" placeholder="กรองข้อมูลในตาราง..." class="w-full md:w-1/3 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="table-filter" placeholder="กรองข้อมูลในตาราง..." class="w-full md:w-1/3 p-2 rounded-md transition duration-300 ease-in-out">
             </div>
             <div class="table-container">
                 <table id="data-table">
@@ -173,8 +200,8 @@
                     datasets: [{
                         label: 'จำนวนผู้ใช้งาน',
                         data: values,
-                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
+                        backgroundColor: ['#ff99c8', '#a2d2ff', '#b39cd0', '#90ee90', '#fdfd96'],
+                        borderColor: ['#ff69b4', '#8ecae6', '#8e6cbb', '#3cb371', '#f0e68c'],
                         borderWidth: 1,
                         borderRadius: 8
                     }]
@@ -200,15 +227,31 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                grid: {
+                                    color: '#fbcfe8',
+                                    borderColor: '#fbcfe8'
+                                },
+                                ticks: {
+                                    color: '#666'
+                                },
                                 title: {
                                     display: true,
-                                    text: 'จำนวนผู้ใช้งาน'
+                                    text: 'จำนวนผู้ใช้งาน',
+                                    color: '#ff69b4'
                                 }
                             },
                             x: {
+                                grid: {
+                                    color: '#fbcfe8',
+                                    borderColor: '#fbcfe8'
+                                },
+                                ticks: {
+                                    color: '#666'
+                                },
                                 title: {
                                     display: true,
-                                    text: 'แพลตฟอร์ม'
+                                    text: 'แพลตฟอร์ม',
+                                    color: '#ff69b4'
                                 }
                             }
                         }
