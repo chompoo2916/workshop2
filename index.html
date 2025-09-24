@@ -1,0 +1,96 @@
+<!<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello - Game Style Profile</title>
+  <style>
+    body {
+      font-family: 'Trebuchet MS', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .profile-card {
+      background: linear-gradient(145deg, #ff61d8, #6b9eff);
+      border-radius: 25px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 20px #ff61d8;
+      padding: 30px;
+      width: 350px;
+      text-align: center;
+      color: #fff;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .profile-card img {
+      width: 150px;
+      height: 200px;
+      border-radius: 15px;
+      object-fit: cover;
+      border: 4px solid #fff;
+      box-shadow: 0 0 15px #00f5ff, 0 0 30px #ff61d8;
+      margin-bottom: 20px;
+    }
+
+    .profile-card h1 {
+      font-size: 24px;
+      text-shadow: 2px 2px 6px #000;
+      margin-bottom: 15px;
+    }
+
+    .profile-card p {
+      font-size: 16px;
+      margin: 6px 0;
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 10px;
+      box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
+    }
+
+    .profile-card p span {
+      font-weight: bold;
+      color: #ffe066;
+    }
+
+    /* ปุ่มสไตล์เกม */
+    .btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background: linear-gradient(90deg, #00f5ff, #ff61d8);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 10px #00f5ff;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 15px #ff61d8;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-card">
+    <img src="chompoo.jpg" alt="Chompoo">
+    <h1>🎮 Chompoo Wilawan</h1>
+    <p><span>E-mail:</span> chompoo2916@gmail.com</p>
+    <p><span>Department:</span> Social Studies</p>
+    <p><span>Faculty:</span> Faculty of Education</p>
+    <button class="btn">Get to know me </button>
+  </div>
+</body>
+</html>
+
