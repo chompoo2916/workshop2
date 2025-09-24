@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font - Prompt for a more friendly look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom style with a pastel theme -->
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: #fdf5f6; /* Soft pastel pink background */
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .grade-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto p-8 bg-white rounded-3xl shadow-2xl transform transition-transform duration-500 hover:scale-[1.01]">
+        <h1 class="text-4xl font-bold text-center mb-6 text-pink-500">
+            <span class="mr-2">✨</span>ระบบคำนวณเกรดสุดคิ้วท์<span class="ml-2">✨</span>
+        </h1>
+
+        <!-- Section for grade weight input -->
+        <div class="bg-pink-100 p-6 rounded-2xl mb-6 shadow-inner border border-pink-200">
+            <h2 class="text-xl font-semibold text-pink-700 mb-4">ตั้งค่าน้ำหนักคะแนน</h2>
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <div class="flex-1">
+                    <label for="work-weight" class="block text-sm font-medium text-gray-700">น้ำหนักคะแนนเก็บ (0-1):</label>
+                    <input type="number" id="work-weight" value="0.6" step="0.1" min="0" max="1"
+                           class="mt-1 block w-full rounded-full border-pink-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 transition duration-150 ease-in-out p-2 border focus:outline-none">
+                </div>
+                <div class="flex-1">
+                    <label for="exam-weight" class="block text-sm font-medium text-gray-700">น้ำหนักคะแนนสอบ (0-1):</label>
+                    <input type="number" id="exam-weight" value="0.4" step="0.1" min="0" max="1"
+                           class="mt-1 block w-full rounded-full border-pink-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 transition duration-150 ease-in-out p-2 border focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section for adding a new student -->
+        <div class="bg-yellow-50 p-6 rounded-2xl mb-6 shadow-inner border border-yellow-200">
+            <h2 class="text-xl font-semibold text-yellow-700 mb-4">เพิ่มนักเรียนใหม่</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label for="student-name" class="block text-sm font-medium text-gray-700">ชื่อนักเรียน:</label>
+                    <input type="text" id="student-name" placeholder="ชื่อ"
+                           class="mt-1 block w-full rounded-full border-yellow-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 transition duration-150 ease-in-out p-2 border focus:outline-none">
+                </div>
+                <div>
+                    <label for="work-score" class="block text-sm font-medium text-gray-700">คะแนนเก็บ (0-100):</label>
+                    <input type="number" id="work-score" placeholder="คะแนน" min="0" max="100"
+                           class="mt-1 block w-full rounded-full border-yellow-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 transition duration-150 ease-in-out p-2 border focus:outline-none">
+                </div>
+                <div>
+                    <label for="exam-score" class="block text-sm font-medium text-gray-700">คะแนนสอบ (0-100):</label>
+                    <input type="number" id="exam-score" placeholder="คะแนน" min="0" max="100"
+                           class="mt-1 block w-full rounded-full border-yellow-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 transition duration-150 ease-in-out p-2 border focus:outline-none">
+                </div>
+                <button id="add-student-btn"
+                        class="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-pink-400 to-purple-500 text-white font-semibold rounded-full hover:from-pink-500 hover:to-purple-600 transition duration-300 ease-in-out shadow-lg transform hover:scale-105">
+                    เพิ่มนักเรียน
+                </button>
+            </div>
+        </div>
+
+        <!-- Section for results and control buttons -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
+            <h2 class="text-xl font-semibold text-gray-800">ตารางผลการคำนวณเกรด</h2>
+            <div class="flex space-x-2">
+                <button id="calculate-all-btn"
+                        class="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-green-400 to-teal-500 text-white font-semibold rounded-full hover:from-green-500 hover:to-teal-600 transition duration-300 ease-in-out shadow-lg transform hover:scale-105">
+                    คำนวณเกรดทั้งหมด
+                </button>
+                <button id="export-csv-btn"
+                        class="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-blue-400 to-sky-500 text-white font-semibold rounded-full hover:from-blue-500 hover:to-sky-600 transition duration-300 ease-in-out shadow-lg transform hover:scale-105">
+                    Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Student list table -->
+        <div class="table-container bg-white rounded-2xl shadow-md border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนนเก็บ</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนนสอบ</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนนรวม</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เกรด</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                    </tr>
+                </thead>
+                <tbody id="student-table-body" class="bg-white divide-y divide-gray-200">
+                    <!-- Student data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Start of JavaScript section
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DOM Elements ---
+            const workWeightInput = document.getElementById('work-weight');
+            const examWeightInput = document.getElementById('exam-weight');
+            const studentNameInput = document.getElementById('student-name');
+            const workScoreInput = document.getElementById('work-score');
+            const examScoreInput = document.getElementById('exam-score');
+            const addStudentBtn = document.getElementById('add-student-btn');
+            const calculateAllBtn = document.getElementById('calculate-all-btn');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const studentTableBody = document.getElementById('student-table-body');
+
+            // --- Initial Data and Constants ---
+            // Key for localStorage
+            const LOCAL_STORAGE_KEY = 'gradeCalculatorStudents';
+            // Example student data for demonstration
+            const initialStudents = [
+                { name: 'สมชาย', workScore: 85, examScore: 90, totalScore: 0, grade: '' },
+                { name: 'สมหญิง', workScore: 78, examScore: 75, totalScore: 0, grade: '' },
+                { name: 'เอกชัย', workScore: 62, examScore: 68, totalScore: 0, grade: '' },
+                { name: 'ดวงพร', workScore: 95, examScore: 88, totalScore: 0, grade: '' },
+                { name: 'มาลี', workScore: 55, examScore: 60, totalScore: 0, grade: '' }
+            ];
+
+            // --- Helper Functions ---
+            
+            // Function to get the current students from localStorage, or use initial data if none exists
+            function getStudents() {
+                const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (storedData) {
+                    return JSON.parse(storedData);
+                }
+                // Save initial data to localStorage and return it
+                saveStudents(initialStudents);
+                return initialStudents;
+            }
+
+            // Function to save student data to localStorage
+            function saveStudents(students) {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
+            }
+
+            // Function to calculate the grade based on the total score
+            function calculateGrade(score) {
+                if (score >= 80) return 'A';
+                if (score >= 70) return 'B';
+                if (score >= 60) return 'C';
+                if (score >= 50) return 'D';
+                return 'F';
+            }
+
+            // Function to render the table with the student data
+            function renderTable(students) {
+                studentTableBody.innerHTML = ''; // Clear the table first
+                students.forEach((student, index) => {
+                    const row = document.createElement('tr');
+                    row.classList.add('hover:bg-gray-100');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.workScore}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.examScore}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.totalScore.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="grade-badge ${getGradeColor(student.grade)}">${student.grade}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="delete-btn px-4 py-2 text-red-600 hover:text-red-900 transition-colors duration-200 rounded-md bg-red-100" data-index="${index}">ลบ</button>
+                        </td>
+                    `;
+                    studentTableBody.appendChild(row);
+                });
+            }
+            
+            // Function to get grade color for a more visually appealing display
+            function getGradeColor(grade) {
+                switch (grade) {
+                    case 'A': return 'bg-green-200 text-green-800';
+                    case 'B': return 'bg-lime-200 text-lime-800';
+                    case 'C': return 'bg-yellow-200 text-yellow-800';
+                    case 'D': return 'bg-orange-200 text-orange-800';
+                    case 'F': return 'bg-red-200 text-red-800';
+                    default: return 'bg-gray-200 text-gray-800';
+                }
+            }
+
+            // --- Event Handlers ---
+
+            // Handler for adding a new student
+            function handleAddStudent() {
+                const name = studentNameInput.value.trim();
+                const workScore = parseInt(workScoreInput.value, 10);
+                const examScore = parseInt(examScoreInput.value, 10);
+
+                // Validation to ensure all fields are filled and valid
+                if (!name || isNaN(workScore) || isNaN(examScore) || workScore < 0 || workScore > 100 || examScore < 0 || examScore > 100) {
+                    // Using a simple message box instead of alert()
+                    const message = document.createElement('div');
+                    message.textContent = 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง (คะแนน 0-100)';
+                    message.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-md shadow-lg transition-transform duration-300 transform translate-y-0 opacity-100 z-50';
+                    document.body.appendChild(message);
+                    setTimeout(() => {
+                        message.classList.add('translate-y-full', 'opacity-0');
+                        setTimeout(() => message.remove(), 300);
+                    }, 3000);
+                    return;
+                }
+
+                let students = getStudents();
+                const newStudent = { name, workScore, examScore, totalScore: 0, grade: '' };
+                students.push(newStudent);
+                saveStudents(students);
+                
+                // Clear input fields
+                studentNameInput.value = '';
+                workScoreInput.value = '';
+                examScoreInput.value = '';
+
+                renderTable(students);
+            }
+
+            // Handler for deleting a student
+            function handleDeleteStudent(event) {
+                if (event.target.classList.contains('delete-btn')) {
+                    const index = parseInt(event.target.dataset.index, 10);
+                    let students = getStudents();
+                    students.splice(index, 1);
+                    saveStudents(students);
+                    renderTable(students);
+                }
+            }
+
+            // Handler for calculating all grades
+            function handleCalculateAll() {
+                const workWeight = parseFloat(workWeightInput.value);
+                const examWeight = parseFloat(examWeightInput.value);
+                
+                // Validation for weights
+                if (isNaN(workWeight) || isNaN(examWeight) || workWeight + examWeight !== 1) {
+                    const message = document.createElement('div');
+                    message.textContent = 'กรุณาตั้งน้ำหนักคะแนนให้ถูกต้อง (รวมกันได้ 1.0)';
+                    message.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-md shadow-lg transition-transform duration-300 transform translate-y-0 opacity-100 z-50';
+                    document.body.appendChild(message);
+                    setTimeout(() => {
+                        message.classList.add('translate-y-full', 'opacity-0');
+                        setTimeout(() => message.remove(), 300);
+                    }, 3000);
+                    return;
+                }
+
+                let students = getStudents();
+                students.forEach(student => {
+                    student.totalScore = (student.workScore * workWeight) + (student.examScore * examWeight);
+                    student.grade = calculateGrade(student.totalScore);
+                });
+                saveStudents(students);
+                renderTable(students);
+            }
+
+            // Handler for exporting data to CSV
+            function handleExportCsv() {
+                const students = getStudents();
+                // Define CSV header
+                let csvContent = "ลำดับ,ชื่อ,คะแนนเก็บ,คะแนนสอบ,คะแนนรวม,เกรด\n";
+                // Add student data rows
+                students.forEach((student, index) => {
+                    csvContent += `${index + 1},${student.name},${student.workScore},${student.examScore},${student.totalScore.toFixed(2)},${student.grade}\n`;
+                });
+
+                // Create a Blob from the CSV content
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create a temporary link and trigger the download
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'grade_report.csv');
+                document.body.appendChild(link);
+                link.click();
+                
+                // Clean up the temporary link and URL
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+            // --- Event Listeners ---
+            addStudentBtn.addEventListener('click', handleAddStudent);
+            calculateAllBtn.addEventListener('click', handleCalculateAll);
+            exportCsvBtn.addEventListener('click', handleExportCsv);
+            studentTableBody.addEventListener('click', handleDeleteStudent);
+
+            // Initial render when the page loads
+            renderTable(getStudents());
+        });
+        // End of JavaScript section
+    </script>
+</body>
+</html>
