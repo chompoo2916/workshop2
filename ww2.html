@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #fce7f3;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fbcfe8' fill-opacity='0.4'%3E%3Cpath d='M.2 10a8 8 0 1 0 15.6 1.1L16 10a8 8 0 1 1-15.8 1L.2 10z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .card {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(255, 105, 180, 0.2), 0 4px 6px -2px rgba(255, 105, 180, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+        }
+        .text-cute-pink {
+            color: #ff69b4;
+        }
+        .text-cute-purple {
+            color: #a2d2ff;
+        }
+        .text-cute-green {
+            color: #90ee90;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .table-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table-container th, .table-container td {
+            text-align: left;
+            padding: 0.75rem;
+            white-space: nowrap;
+            color: #333;
+            border-bottom: 1px solid #fbcfe8;
+        }
+        .table-container th {
+            background-color: #fef2f2;
+            font-weight: 600;
+            color: #ff69b4;
+        }
+        .table-container tr:nth-child(even) {
+            background-color: #f9f0f3;
+        }
+        .table-container tr:hover {
+            background-color: #ffe4e6;
+        }
+        /* Custom scrollbar for better appearance */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: #ffb6c1;
+            border-radius: 10px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background-color: #fbcfe8;
+        }
+        input[type="text"] {
+            background-color: #fff;
+            color: #333;
+            border: 2px solid #ff69b4;
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.2);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-cute-pink mb-6 text-center">💖 Interactive Dashboard น่ารักๆ 💖</h1>
+        
+        <div class="flex items-center justify-between mb-6">
+            <!-- ปุ่ม Upload ถูกลบออกเพื่อให้ดึงข้อมูลจาก URL โดยอัตโนมัติ -->
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+            <div class="card flex flex-col items-center">
+                <p class="text-lg font-medium text-gray-500">จำนวนผู้ใช้งาน</p>
+                <p id="user-count" class="text-4xl font-bold text-cute-pink mt-2">0</p>
+            </div>
+            <div class="card flex flex-col items-center">
+                <p class="text-lg font-medium text-gray-500">คะแนนความพึงพอใจเฉลี่ย</p>
+                <p id="satisfaction-score" class="text-4xl font-bold text-cute-green mt-2">0</p>
+            </div>
+        </div>
+
+        <!-- Bar Chart for Platforms -->
+        <div class="card mb-8">
+            <h2 class="text-xl font-semibold text-cute-pink mb-4">จำนวนผู้ใช้งานตามแพลตฟอร์ม</h2>
+            <canvas id="platform-chart"></canvas>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card mb-8">
+            <h2 class="text-xl font-semibold text-cute-pink mb-4">ตารางข้อมูลทั้งหมด</h2>
+            <div class="mb-4">
+                <input type="text" id="table-filter" placeholder="กรองข้อมูลในตาราง..." class="w-full md:w-1/3 p-2 rounded-md transition duration-300 ease-in-out">
+            </div>
+            <div class="table-container">
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <!-- Table headers will be generated by JavaScript -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table body will be generated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userCountEl = document.getElementById('user-count');
+            const satisfactionScoreEl = document.getElementById('satisfaction-score');
+            const tableBody = document.querySelector('#data-table tbody');
+            const tableHead = document.querySelector('#data-table thead tr');
+            const tableFilter = document.getElementById('table-filter');
+            let data = [];
+            let chart;
+
+            const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSMABJcYYEDvfzE5jG8gZgcqPjsABzNF4iGjESV9ayAiFVh5t-1Ygl9BUxBynJWfpyDfG8U_VvR0vv/pub?gid=0&single=true&output=csv';
+
+            // Function to load and parse the CSV from URL
+            async function loadCSVFromUrl(url) {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                return new Promise((resolve, reject) => {
+                    Papa.parse(csvText, {
+                        header: true,
+                        dynamicTyping: true,
+                        complete: function(results) {
+                            resolve(results.data);
+                        },
+                        error: function(error) {
+                            reject(error);
+                        }
+                    });
+                });
+            }
+
+            // Function to render the dashboard with the given data
+            function renderDashboard(csvData) {
+                data = csvData.filter(row => row.customer_id !== null); // Filter out empty rows
+                
+                // Update summary cards
+                const userCount = data.length;
+                const totalSatisfaction = data.reduce((sum, row) => sum + (row.satisfaction_score || 0), 0);
+                const avgSatisfaction = userCount > 0 ? (totalSatisfaction / userCount).toFixed(2) : '0';
+                
+                userCountEl.textContent = userCount;
+                satisfactionScoreEl.textContent = avgSatisfaction;
+
+                // Update the bar chart
+                updateChart();
+
+                // Update the data table
+                updateTable();
+            }
+
+            // Function to create/update the bar chart
+            function updateChart() {
+                const platformCounts = data.reduce((acc, row) => {
+                    const platform = row.preferred_platform;
+                    if (platform) {
+                        acc[platform] = (acc[platform] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+
+                const labels = Object.keys(platformCounts);
+                const values = Object.values(platformCounts);
+                
+                const chartData = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนผู้ใช้งาน',
+                        data: values,
+                        backgroundColor: ['#ff99c8', '#a2d2ff', '#b39cd0', '#90ee90', '#fdfd96'],
+                        borderColor: ['#ff69b4', '#8ecae6', '#8e6cbb', '#3cb371', '#f0e68c'],
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                };
+                
+                const config = {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `จำนวน: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#fbcfe8',
+                                    borderColor: '#fbcfe8'
+                                },
+                                ticks: {
+                                    color: '#666'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'จำนวนผู้ใช้งาน',
+                                    color: '#ff69b4'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: '#fbcfe8',
+                                    borderColor: '#fbcfe8'
+                                },
+                                ticks: {
+                                    color: '#666'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'แพลตฟอร์ม',
+                                    color: '#ff69b4'
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const ctx = document.getElementById('platform-chart').getContext('2d');
+                if (chart) {
+                    chart.destroy(); // Destroy old chart before creating a new one
+                }
+                chart = new Chart(ctx, config);
+            }
+
+            // Function to update the data table
+            function updateTable(filterText = '') {
+                tableHead.innerHTML = '';
+                tableBody.innerHTML = '';
+                
+                if (data.length === 0) return;
+
+                // Generate table headers
+                const headers = Object.keys(data[0]);
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header.replace(/_/g, ' ').toUpperCase();
+                    tableHead.appendChild(th);
+                });
+
+                // Filter data
+                const filteredData = data.filter(row => {
+                    const rowString = Object.values(row).join(' ').toLowerCase();
+                    return rowString.includes(filterText.toLowerCase());
+                });
+
+                // Generate table rows
+                filteredData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    headers.forEach(header => {
+                        const td = document.createElement('td');
+                        td.textContent = row[header] || '-';
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+            }
+
+            // Event listener for table filtering
+            tableFilter.addEventListener('keyup', (event) => {
+                updateTable(event.target.value);
+            });
+
+            // Load data from the URL when the page loads
+            loadCSVFromUrl(csvUrl)
+                .then(renderDashboard)
+                .catch(error => {
+                    console.error('Error loading CSV from URL:', error);
+                    alert('ไม่สามารถโหลดข้อมูลจาก URL ได้ โปรดตรวจสอบว่าลิงก์ถูกต้องและเป็นสาธารณะ');
+                });
+        });
+    </script>
+</body>
+</html>
